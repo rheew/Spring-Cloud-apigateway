@@ -41,10 +41,27 @@ spring:
                 baseMessage: Hi, there.
                 preLogger: true
                 postLogger: true
+#        - id: user-service
+#          uri: lb://USER-SERVICE
+#          predicates:
+#            - Path=/user-service/**
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
             - Path=/user-service/**
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+            - AuthorizationHeaderFilter
         - id: catalog-service
           uri: lb://CATALOG-SERVICE
           predicates:
@@ -54,4 +71,6 @@ spring:
           predicates:
             - Path=/order-service/**
 
-
+token:
+  expiration_time: 86400000
+  secret: user_token
